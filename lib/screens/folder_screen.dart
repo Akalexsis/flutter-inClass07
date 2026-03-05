@@ -42,7 +42,7 @@ class _FoldersScreenState extends State {
   }
 
   // allow user to delete folder and ask if this is the action they want to take
-  Future _deleteFolder(Folder folder) async {
+  Future _deleteFolder(Folder folder) async { // Folder folder - gets all data related to specific folder to delete
     final confirmed = await showDialog(
       context: context,
       builder: (context) => AlertDialog(

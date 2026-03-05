@@ -7,69 +7,65 @@ import '../screens/delete_confirmation.dart';
 
 
 class CardsScreen extends StatefulWidget {
-  const CardsScreen({super.key});
+  // accept folder data from Folder screen
+  final Folder folder;
+  const CardsScreen({super.key, required this.folder});
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
 }
 
-class _CardsScreenState extends State {
+class _CardsScreenState extends State<CardsScreen> {
+  // initialize the card repository to perform CRUD operations
   final CardRepository _cardRepository = CardRepository();
-  List _folders = [];
-  Map _cardCounts = {};
+  late final Folder folder;
+  List _cards = [];
 
   @override
   void initState() {
     super.initState();
-    // _loadFolders();
+    _loadCards();
   }
 
-  // get all folders and their related cards and render to screen
-  // Future _loadFolders() async {
-  //   final folders = await _folderRepository.getAllFolders();
-  //   final Map counts = {};
-    
-  //   for (var folder in folders) {
-  //     counts[folder.id!] = await _cardRepository.getCardCountByFolder(folder.id!);
-  //   }
-    
-  //   setState(() {
-  //     _folders = folders;
-  //     _cardCounts = counts;
-  //   });
-  // }
+  // get all cards by folder id to render to screen
+  Future _loadCards() async {
+    final cards = await _cardRepository.getCardsByFolderId(folder.id!);
 
-  // // allow user to delete folder and ask if this is the action they want to take
-  // Future _deleteFolder(Folder folder) async {
-  //   final confirmed = await showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: Text('Delete Folder?'),
-  //       content: Text(
-  //         'Are you sure you want to delete "${folder.folderName}"? '
-  //         'This will also delete all ${_cardCounts[folder.id!]} cards in this folder.'
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, false),
-  //           child: Text('Cancel'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, true),
-  //           child: Text('Delete', style: TextStyle(color: Colors.red)),
-  //         ),
-  //       ],
-  //     ),
-  //   );
+    setState(() {
+      _cards = cards;
+    });
+  }
 
-  //   if (confirmed == true) {
-  //     await _folderRepository.deleteFolder(folder.id!);
-  //     _loadFolders();
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Folder "${folder.folderName}" deleted')),
-  //     );
-  //   }
-  // }
+  // allow user to delete card and ask if this is the action they want to take
+  Future _deleteCard(Card card) async {
+    final confirmed = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Card?'),
+        content: Text(
+          'Are you sure you want to delete "${card.cardName}"? '
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _cardRepository.deleteCard(card.id!);
+      _loadCards(); // update card state after deletion
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Card "${card.cardName}" deleted')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,68 +74,50 @@ class _CardsScreenState extends State {
         title: Text('Card Organizer'),
         elevation: 0,
       ),
-      // body: GridView.builder( // display all folders to screen as a card
-      //   padding: EdgeInsets.all(16),
-      //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      //     crossAxisCount: 2,
-      //     crossAxisSpacing: 16,
-      //     mainAxisSpacing: 16,
-      //     childAspectRatio: 1.2,
-      //   ),
-      //   itemCount: _folders.length,
-      //   itemBuilder: (context, index) {
-      //     final folder = _folders[index];
-      //     final cardCount = _cardCounts[folder.id!] ?? 0;
+      body: GridView.builder( // display all cards to screen as a card
+        padding: EdgeInsets.all(16),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.2,
+        ),
+        itemCount: _cards.length,
+        itemBuilder: (context, index) {
+          final card = _cards[index];
           
-      //     return Card(
-      //       elevation: 4,
-      //       shape: RoundedRectangleBorder(
-      //         borderRadius: BorderRadius.circular(12),
-      //       ),
-      //       child: InkWell(
-      //         onTap: () async {
-      //           await Navigator.push(
-      //             context,
-      //             MaterialPageRoute(
-      //               builder: (context) => CardsScreen(folder: folder),
-      //             ),
-      //           );
-      //           _loadFolders(); // Refresh after returning
-      //         },
-      //         child: Column(
-      //           mainAxisAlignment: MainAxisAlignment.center,
-      //           children: [
-      //             Icon(
-      //               _getSuitIcon(folder.folderName),
-      //               size: 64,
-      //               color: _getSuitColor(folder.folderName),
-      //             ),
-      //             SizedBox(height: 8),
-      //             Text(
-      //               folder.folderName,
-      //               style: TextStyle(
-      //                 fontSize: 20,
-      //                 fontWeight: FontWeight.bold,
-      //               ),
-      //             ),
-      //             Text(
-      //               '$cardCount cards',
-      //               style: TextStyle(
-      //                 color: Colors.grey[600],
-      //               ),
-      //             ),
-      //             SizedBox(height: 8),
-      //             IconButton(
-      //               icon: Icon(Icons.delete, color: Colors.red),
-      //               onPressed: () => _deleteFolder(folder),
-      //             ),
-      //           ],
-      //         ),
-      //       ),
-      //     );
-      //   },
-      // ),
-    );
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _getSuitIcon(card.cardName),
+                  size: 64,
+                  color: _getSuitColor(card.cardName),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  folder.folderName,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                  SizedBox(height: 8),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteCard(card),
+                  ),
+                ],
+              ),
+            );
+          }
+        ),
+      );
   }
 
   IconData _getSuitIcon(String suitName) {
