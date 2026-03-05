@@ -37,35 +37,35 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   // allow user to delete card and ask if this is the action they want to take
-  Future _deleteCard(Card card) async {
-    final confirmed = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Card?'),
-        content: Text(
-          'Are you sure you want to delete "${card.cardName}"? '
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+  // Future _deleteCard(Card card) async {
+  //   final confirmed = await showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: Text('Delete Card?'),
+  //       content: Text(
+  //         'Are you sure you want to delete "${card.cardName}"? '
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, false),
+  //           child: Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, true),
+  //           child: Text('Delete', style: TextStyle(color: Colors.red)),
+  //         ),
+  //       ],
+  //     ),
+  //   );
 
-    if (confirmed == true) {
-      await _cardRepository.deleteCard(card.id!);
-      _loadCards(); // update card state after deletion
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Card "${card.cardName}" deleted')),
-      );
-    }
-  }
+  //   if (confirmed == true) {
+  //     await _cardRepository.deleteCard(card.id!);
+  //     _loadCards(); // update card state after deletion
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Card "${card.cardName}" deleted')),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -101,17 +101,26 @@ class _CardsScreenState extends State<CardsScreen> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  folder.folderName,
+                  card.cardName,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                   SizedBox(height: 8),
-                  IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteCard(card),
-                  ),
+                  Image.network(card.imageUrl, height: 40, width: 30),
+                  // IconButton( // DELETE CARD
+                  //   icon: Icon(Icons.delete, color: Colors.red),
+                  //   onPressed: () => _deleteCard(card),
+                  // ),
+                  // IconButton( // EDIT CARD
+                  //   icon: Icon(Icons.edit, color: Colors.white),
+                  //   onPressed: () => _editCard(card),
+                  // ),
+                  // IconButton( // ADD CARD
+                  //   icon: Icon(Icons.edit, color: Colors.white),
+                  //   onPressed: () => _editCard(card),
+                  // ),
                 ],
               ),
             );

@@ -66,7 +66,7 @@ class _FoldersScreenState extends State {
 
     if (confirmed == true) {
       await _folderRepository.deleteFolder(folder.id!);
-      _loadFolders();
+      _loadFolders(); // updates folder's state after deletion
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Folder "${folder.folderName}" deleted')),
       );
