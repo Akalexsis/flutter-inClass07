@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../model/folder_model.dart';
-import '../model/card_model.dart';
+
 import '../repositories/folder_repository.dart';
 import '../repositories/card_repository.dart';
-import 'modify_card_screen.dart';
-import '../screens/delete_confirmation.dart';
+
 import '../screens/card_screen.dart';
 
 class FoldersScreen extends StatefulWidget {
@@ -14,11 +13,11 @@ class FoldersScreen extends StatefulWidget {
   _FoldersScreenState createState() => _FoldersScreenState();
 }
 
-class _FoldersScreenState extends State {
+class _FoldersScreenState extends State<FoldersScreen> {
   final FolderRepository _folderRepository = FolderRepository();
   final CardRepository _cardRepository = CardRepository();
   List _folders = [];
-  Map _cardCounts = {};
+  Map<int, int> _cardCounts = {}; //int (folder ID), int(counts)
 
   @override
   void initState() {
@@ -27,9 +26,9 @@ class _FoldersScreenState extends State {
   }
 
   // get all folders and their related cards and render to screen
-  Future _loadFolders() async {
+  Future<void> _loadFolders() async {
     final folders = await _folderRepository.getAllFolders();
-    final Map counts = {};
+    final Map<int, int> counts = {};
     
     for (var folder in folders) {
       counts[folder.id!] = await _cardRepository.getCardCountByFolder(folder.id!);
@@ -42,7 +41,7 @@ class _FoldersScreenState extends State {
   }
 
   // allow user to delete folder and ask if this is the action they want to take
-  Future _deleteFolder(Folder folder) async { // Folder folder - gets all data related to specific folder to delete
+  Future<void> _deleteFolder(Folder folder) async { // Folder folder - gets all data related to specific folder to delete
     final confirmed = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -66,7 +65,9 @@ class _FoldersScreenState extends State {
 
     if (confirmed == true) {
       await _folderRepository.deleteFolder(folder.id!);
-      _loadFolders();
+      await _loadFolders();
+
+      if (!mounted) return; //mount guard in case widget was dusoised while waiting
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Folder "${folder.folderName}" deleted')),
       );
@@ -86,7 +87,7 @@ class _FoldersScreenState extends State {
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 1.2,
+          childAspectRatio: .85,
         ),
         itemCount: _folders.length,
         itemBuilder: (context, index) {
@@ -106,7 +107,7 @@ class _FoldersScreenState extends State {
                     builder: (context) => CardsScreen(folder: folder),
                   ),
                 );
-                _loadFolders(); // Refresh after returning
+                await _loadFolders(); // Refresh after returning
               },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
