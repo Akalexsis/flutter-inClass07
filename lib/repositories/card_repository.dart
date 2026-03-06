@@ -1,6 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import '../database_helper.dart';
 import '../model/card_model.dart'; // Add this import for the PlayingCard model
 
@@ -10,9 +8,14 @@ class CardRepository {
 
   // CREATE - Insert a new card
   Future<int> insertCard(PlayingCard card) async {
-    final db = await _dbHelper.database;
-    return await db.insert('cards', card.toMap());
-  }
+  final db = await _dbHelper.database;
+  return await db.insert('cards', {
+    'card_name': card.cardName,
+    'suit': card.suit,
+    'image_url': card.imageUrl,
+    'folder_id': card.folderId,
+  });
+}
 
   // READ - Get all cards
   Future<List<PlayingCard>> getAllCards() async {
@@ -54,14 +57,19 @@ class CardRepository {
 
   // UPDATE - Update an existing card
   Future<int> updateCard(PlayingCard card) async {
-    final db = await _dbHelper.database;
-    return await db.update(
-      'cards',
-      card.toMap(),
-      where: 'id = ?',
-      whereArgs: [card.id],
-    );
-  }
+  final db = await _dbHelper.database;
+  return await db.update(
+    'cards',
+    {
+      'card_name': card.cardName,
+      'suit': card.suit,
+      'image_url': card.imageUrl,
+      'folder_id': card.folderId,
+    },
+    where: 'id = ?',
+    whereArgs: [card.id],
+  );
+}
 
   // DELETE - Delete a card
   Future<int> deleteCard(int id) async {
