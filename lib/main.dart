@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const FoldersScreen(),//folder screen as home screen
+      home: const FoldersScreen(),//folder screen as home
     );
   }
 }
