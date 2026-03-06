@@ -16,11 +16,18 @@ class DatabaseHelper {
   }
 
   Future _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+  final dbPath = await getDatabasesPath();
+  final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
-  }
+  return await openDatabase(
+    path,
+    version: 1,
+    onCreate: _createDB,
+    onOpen: (db) async {
+      await db.execute('PRAGMA foreign_keys = ON');  // add this
+    },
+  );
+}
 
   Future _createDB(Database db, int version) async {
     // Create Folders table
@@ -62,34 +69,31 @@ class DatabaseHelper {
     }
   }
 
-  Future _prepopulateCards(Database db) async {
-    final suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
-    final cards = [
-      'Ace',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10',
-      'Jack',
-      'Queen',
-      'King',
-    ];
+Future _prepopulateCards(Database db) async {
+  final suits = [
+    {'name': 'Hearts',   'code': 'H', 'folderId': 1},
+    {'name': 'Diamonds', 'code': 'D', 'folderId': 2},
+    {'name': 'Clubs',    'code': 'C', 'folderId': 3},
+    {'name': 'Spades',   'code': 'S', 'folderId': 4},
+  ];
 
-    for (int folderId = 1; folderId <= suits.length; folderId++) {
-      for (var card in cards) {
-        await db.insert('cards', {
-          'card_name': card,
-          'suit': suits[folderId - 1],
-          'image_url':
-              'assets/cards/${suits[folderId - 1].toLowerCase()}_$card.png',
-          'folder_id': folderId,
-        });
-      }
+  // value code : display name
+  final cards = {
+    'A': 'Ace', '2': '2', '3': '3', '4': '4', '5': '5',
+    '6': '6', '7': '7', '8': '8', '9': '9', '0': '10',
+    'J': 'Jack', 'Q': 'Queen', 'K': 'King',
+  };
+
+  for (var suit in suits) {
+    for (var entry in cards.entries) {
+      await db.insert('cards', {
+        'card_name': entry.value,           // "Ace", "10", "King" etc
+        'suit': suit['name'],
+        'image_url': 'assets/cards/${entry.key}${suit['code']}.png',  // "AH.png", "0D.png"
+        'folder_id': suit['folderId'],
+      });
     }
   }
+}
+
 }
